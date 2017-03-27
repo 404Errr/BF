@@ -8,7 +8,9 @@ public class BF {
 
 //	private static final String RAW = "++++++++[->+<]>.";
 //	private static final String RAW = "[[][]][][[][[]]]";
-	private static final String RAW = "[[]]]]";
+//	private static final String RAW = "[[]][[[]]";
+	private static final String RAW = "[][][]]";
+//	private static final String RAW = "[[]][[]]";
 
 	private static final char LEFT = '<';
 	private static final char RIGHT = '>';
@@ -21,23 +23,52 @@ public class BF {
 	private static final char[] LEGAL = {LEFT, RIGHT, PLUS, MINUS, OUTPUT, INPUT, LOOP_OPEN, LOOP_CLOSE};// everything above
 
 	private static char[] code;
-	private static int[] data;
+	private static byte[] data;
 	private static int codePointer, pointer;
 
 	public static void main(String[] args) {
 		compile(RAW);
 //		System.out.println(Arrays.toString(code));
-		data = new int[30000];
+		data = new byte[30000];
 		for (int i = 0;i<data.length;i++) {
 			data[i] = 0;
 		}
 //		run();
 	}
 
+	static void checkValidBrackets(List<Character> brackets) {
+//		int pairCount = 0;
+////		System.out.println(pairCount);
+//		for (int i = 0;i<brackets.size();i++) {
+//			if (brackets.get(i)==LOOP_OPEN) pairCount++;//is [
+//			else pairCount--;//is ]
+////			System.out.println(pairCount+"\t"+(char) brackets.get(i));
+//		}
+//		if (pairCount!=0) {
+//			System.err.println("bracket error");
+//			System.exit(0);
+//		}
+		if (brackets.size()%2!=0) {
+			System.err.println("bracket error");
+			System.exit(0);
+		}
+		try {
+			while (brackets.size()>=2) {
+				int j = 0;
+				while (brackets.get(j)==LOOP_OPEN) j++;
+				brackets.remove(j);
+				brackets.remove(j-1);
+			}
+		}
+		catch (Exception e) {}
+		if (brackets.size()>0) {
+			System.err.println("bracket error");
+			System.exit(0);
+		}
+	}
+	
 	static void compile(String rawCode) {
 		List<Character> codeTemp = new ArrayList<>();
-		int pairCount = 0;
-		System.out.println(pairCount);
 		for (int i = 0;i<rawCode.length();i++) {
 			boolean valid = false;
 			char command = rawCode.charAt(i);
@@ -48,18 +79,18 @@ public class BF {
 				}
 			}
 			if (valid) {
-				if (command==LOOP_OPEN) pairCount++;
-				if (command==LOOP_CLOSE) pairCount--;
-				if (command==LOOP_OPEN||command==LOOP_CLOSE) System.out.println(pairCount+"\t"+(char) command);
-				if (pairCount<0) System.err.println("bracket error <0");
+
+				
 				codeTemp.add(rawCode.charAt(i));
 			}
 		}
-		if (pairCount!=0) {
-			System.err.println("bracket error !0");
-		}
 		code = new char[codeTemp.size()];
-		for (int i = 0;i<code.length;i++) code[i] = codeTemp.get(i);
+		List<Character> brackets = new ArrayList<>(); 
+		for (int i = 0;i<code.length;i++) {
+			code[i] = codeTemp.get(i);
+			if (codeTemp.get(i)==LOOP_OPEN||codeTemp.get(i)==LOOP_CLOSE) brackets.add(codeTemp.get(i));
+		}
+		checkValidBrackets(brackets);
 	}
 
 	static void run() {
