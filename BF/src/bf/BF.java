@@ -1,26 +1,20 @@
 package bf;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class BF {
-
-//	private static final String RAW = "++++++++[->+<]>.";
-//	private static final String RAW = "[[][]][][[][[]]]";
-//	private static final String RAW = "[[]][[[]]";
-	private static final String RAW = "[][][]]";
-//	private static final String RAW = "[[]][[]]";
-
-	private static final char LEFT = '<';
-	private static final char RIGHT = '>';
-	private static final char PLUS = '+';
-	private static final char MINUS = '-';
-	private static final char OUTPUT = '.';
-	private static final char INPUT = ',';
-	private static final char LOOP_OPEN = '[';
-	private static final char LOOP_CLOSE = ']';
-	private static final char[] LEGAL = {LEFT, RIGHT, PLUS, MINUS, OUTPUT, INPUT, LOOP_OPEN, LOOP_CLOSE};// everything above
+	private static final String RAW = "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.";
+//	private static final String RAW = "";
+	
+	private static final boolean PRINT_DATA = false;
+	private static final boolean OUTPUT_NUMBER = false;
+	
+	private static final char LEFT = '<', RIGHT = '>';
+	private static final char PLUS = '+', MINUS = '-';
+	private static final char OUTPUT = '.', INPUT = ',';
+	private static final char LOOP_OPEN = '[', LOOP_CLOSE = ']';
+	private static final char[] LEGAL = {LEFT, RIGHT, PLUS, MINUS, OUTPUT, INPUT, LOOP_OPEN, LOOP_CLOSE};
 
 	private static char[] code;
 	private static byte[] data;
@@ -33,25 +27,25 @@ public class BF {
 		for (int i = 0;i<data.length;i++) {
 			data[i] = 0;
 		}
-//		run();
+		run();
 	}
 
-	static void checkValidBrackets(List<Character> brackets) {
-//		int pairCount = 0;
-////		System.out.println(pairCount);
-//		for (int i = 0;i<brackets.size();i++) {
-//			if (brackets.get(i)==LOOP_OPEN) pairCount++;//is [
-//			else pairCount--;//is ]
-////			System.out.println(pairCount+"\t"+(char) brackets.get(i));
-//		}
-//		if (pairCount!=0) {
-//			System.err.println("bracket error");
-//			System.exit(0);
-//		}
-		if (brackets.size()%2!=0) {
+	private static void checkValidBrackets(List<Character> brackets) {
+		int pairCount = 0;
+//		System.out.println(pairCount);
+		for (int i = 0;i<brackets.size();i++) {
+			if (brackets.get(i)==LOOP_OPEN) pairCount++;//is [
+			else pairCount--;//is ]
+//			System.out.println(pairCount+"\t"+(char) brackets.get(i));
+		}
+		if (pairCount!=0) {
 			System.err.println("bracket error");
 			System.exit(0);
 		}
+//		if (brackets.size()%2!=0) {
+//			System.err.println("bracket error");
+//			System.exit(0);
+//		}
 		try {
 			while (brackets.size()>=2) {
 				int j = 0;
@@ -67,7 +61,7 @@ public class BF {
 		}
 	}
 	
-	static void compile(String rawCode) {
+	private static void compile(String rawCode) {
 		List<Character> codeTemp = new ArrayList<>();
 		for (int i = 0;i<rawCode.length();i++) {
 			boolean valid = false;
@@ -78,11 +72,7 @@ public class BF {
 					break;
 				}
 			}
-			if (valid) {
-
-				
-				codeTemp.add(rawCode.charAt(i));
-			}
+			if (valid) codeTemp.add(rawCode.charAt(i));
 		}
 		code = new char[codeTemp.size()];
 		List<Character> brackets = new ArrayList<>(); 
@@ -93,9 +83,9 @@ public class BF {
 		checkValidBrackets(brackets);
 	}
 
-	static void run() {
+	private static void run() {
 		while (codePointer<code.length) {
-			System.out.println((char) code[codePointer]+"\t"+codePointer);
+//			System.out.println((char) code[codePointer]+"\t"+codePointer);
 			switch (code[codePointer]) {
 			case LEFT:
 				left();
@@ -122,42 +112,86 @@ public class BF {
 				loopClose();
 				break;
 			}
+			if (PRINT_DATA) printData();
 			codePointer++;
 		}
 	}
 
-	static void loopOpen() {
-		
+	private static void loopOpen() {
+//		if (data[pointer]==0) {
+//			while (code[codePointer]!=LOOP_CLOSE) {
+//				codePointer++;
+//			}
+//		}
+		if (data[pointer]==0) {
+			int depth = 0;
+			do {
+				if (code[codePointer]!=LOOP_CLOSE) depth++;
+				if (code[codePointer]!=LOOP_OPEN) depth--;
+				codePointer++;
+			} while (depth!=0);
+		}
 	}
 	
-	static void loopClose() {
-		
+	private static void loopClose() {
+//		if (data[pointer]!=0) {
+//			while (code[codePointer]!=LOOP_OPEN) {
+//				codePointer--;
+//			}
+//		}
+		if (data[pointer]!=0) {
+			int depth = 0;
+			do {
+				if (code[codePointer]!=LOOP_CLOSE) depth++;
+				if (code[codePointer]!=LOOP_OPEN) depth--;
+				codePointer--;
+			} while (depth!=0);
+		}
 	}
 	
-	static void right() {
+	private static void right() {
 		if (pointer<data.length-1) pointer++;
 	}
 
-	static void left() {
+	private static void left() {
 		if (pointer>0) pointer--;
 	}
 
-	static void plus() {
+	private static void plus() {
 		data[pointer]++;
 	}
 
-	static void minus() {
+	private static void minus() {
 		data[pointer]--;
 	}
 
-	static void output() {
-		System.out.print((char) data[pointer]);
+	private static void output() {
+		if (OUTPUT_NUMBER) System.out.println(data[pointer]);
+		else System.out.print((char) data[pointer]);
 	}
 
-	static void input() {//TODO
+	private static void input() {//TODO
 
 	}
-
+	
+	private static final int PRINT_LENGTH = 30;
+	private static void printData() {
+		StringBuilder str = new StringBuilder();
+		
+		for (int i = 0;i<PRINT_LENGTH;i++) {
+			if (i==pointer) {
+				str.append("[");
+				if (data[i]<=15) str.append("0");
+				str.append(Integer.toHexString(data[i]));
+				continue;
+			}
+			if (i-1==pointer) str.append("]");
+			else str.append(" ");
+			if (data[i]<=15) str.append("0");
+			str.append(Integer.toHexString(data[i]));
+		}
+		System.out.println((char) code[codePointer]+"\t"+str.toString());
+	}
 }
 /*
 > right
