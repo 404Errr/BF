@@ -1,13 +1,17 @@
 package bf;
 
+import java.io.FileNotFoundException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class BF {
-//	private static final String RAW = "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.";
-//	private static final String RAW = "";
-	private static final String RAW = "+>+[<[>>+>+<<<-]>>>[<<<+>>>-]<<[>+>+<<-]>>[<<+>>-]<]";//"+>+ [< [>>+>+<<<-]>>>[<<<+>>>-]copy <<[>+>+<<-]>>[<<+>>-]add <]"
 
+	private static final String FILE = "code";
+	private static final String PATH = "src/bf/";
+	
 	private static final boolean PRINT_DATA = true;
 	private static final boolean OUTPUT_NUMBER = false;
 	
@@ -18,19 +22,25 @@ public class BF {
 	private static final char[] LEGAL = {LEFT, RIGHT, PLUS, MINUS, OUTPUT, INPUT, LOOP_OPEN, LOOP_CLOSE};
 
 	private static char[] code;
-//	private static byte[] data;
-	private static int[] data;
+	private static byte[] data;
+//	private static int[] data;
 	private static int codePointer, pointer;
 
+	private static Scanner input;
+	private static StringBuilder log;
+	
 	public static void main(String[] args) {
-		compile(RAW);
-//		System.out.println(Arrays.toString(code));
-		data = new int[30000];
-//		data = new byte[30000];
+//		log = new StringBuilder();
+//		compile(RAW);
+		compile(Util.fileToString(PATH+FILE));
+		input = new Scanner(System.in);
+//		data = new int[30000];
+		data = new byte[30000];
 		for (int i = 0;i<data.length;i++) {
 			data[i] = 0;
 		}
 		run();
+//		System.out.println(log.toString());
 	}
 
 	private static void checkValidBrackets(List<Character> brackets) {
@@ -95,9 +105,12 @@ public class BF {
 			case OUTPUT:
 				if (OUTPUT_NUMBER) System.out.println(data[pointer]);
 				else System.out.print((char) data[pointer]);
+//				if (OUTPUT_NUMBER) log.append(data[pointer]);
+//				else log.append((char) data[pointer]);
 				break;
 			case INPUT:
-				//todo
+				String in = input.nextLine();
+				data[pointer] = (byte) Integer.parseInt(in);
 				break;
 			case LOOP_OPEN:
 				if (data[pointer]==0) {
@@ -125,7 +138,7 @@ public class BF {
 		}
 	}	
 
-	private static final int PRINT_LENGTH = 30;
+	private static final int PRINT_LENGTH = 32;
 	private static void printData() {
 		StringBuilder str = new StringBuilder();
 		for (int i = 0;i<PRINT_LENGTH;i++) {
@@ -141,5 +154,45 @@ public class BF {
 			str.append(Integer.toHexString(data[i]));
 		}
 		System.out.println(str.toString());
+//		log.append(str.toString()+"\n");
 	}
 }
+
+class Util {
+	public static String fileToString(String path) {
+		try {
+			List<String> lines = Files.readAllLines(Paths.get(path));
+			StringBuilder str = new StringBuilder();
+			boolean inComment = false;
+			for (String line:lines) {
+				if (line.contains("/*")) inComment = true;
+				if (line.contains("*/")) inComment = false;
+				if (!inComment&&!line.startsWith("//")) str.append(line);
+			}
+			return str.toString();
+		}
+		catch (FileNotFoundException e) {
+			System.err.println("Can't find file at: "+path);
+			System.exit(0);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		return "";
+	}
+}
+//CODE FILE
+//++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.
+
+
+//+>+[<[>>+>+<<<-]>>>[<<<+>>>-]<<[>+>+<<-]>>[<<+>>-]<]
+
+
+/*
+>>>+[[-]>>[-]++>+>+++++++[<++++>>++<-]++>>+>+>+++++[>++>++++++<<-]+>>>,<++[[>[
+->>]<[>>]<<-]<[<]<+>>[>]>[<+>-[[<+>-]>]<[[[-]<]++<-[<+++++++++>[<->-]>>]>>]]<<
+]<]<[[<]>[[>]>>[>>]+[<<]<[<]<+>>-]>[>]+[->>]<<<<[[<<]<[<]+<<[+>+<<-[>-->+<<-[>
++<[>>+<<-]]]>[<+>-]<]++>>-->[>]>>[>>]]<<[>>+<[[<]<]>[[<<]<[<]+[-<+>>-[<<+>++>-
+[<->[<<+>>-]]]<[>+<-]>]>[>]>]>[>>]>>]<<[>>+>>+>>]<<[->>>>>>>>]<<[>.>>>>>>>]<<[
+>->>>>>]<<[>,>>>]<<[>+>]<<[+<<]<]
+*/
